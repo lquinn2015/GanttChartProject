@@ -75,7 +75,7 @@ var cLabeles = [
     },
 ];
 
-/** EDITED CUSTOM VERSION
+/** EDITED CUSTOM VERSION--this change only makes labels text to appear
  * The YAxis widget displays a vertical axis to the left or right
  * of the charts. A YAxis always appears within a `ChartRow`, from
  * which it gets its height and positioning. You can have more than
