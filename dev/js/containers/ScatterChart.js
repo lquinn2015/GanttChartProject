@@ -62,7 +62,7 @@ var defaultStyle = {
   muted: { fill: "steelblue", opacity: 0.4 }
 };
 
-/**
+/** EDITTED VERSION-- makes rect be drawn instead of circles
  * The `<ScatterChart >` widget is able to display multiple columns of a series
  * scattered across a time axis.
  *

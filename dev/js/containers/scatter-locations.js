@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+
 import _ from "underscore";
 import Moment from "moment";
 import { format } from "d3-format";
@@ -14,6 +15,7 @@ import ScatterChart from "./ScatterChart"
 
 //React Widgets
 import DropdownList from 'react-widgets/lib/DropdownList'
+import Datetime from 'react-datetime'
 
 // Spotting data
 const spotJSON = require('json!./sighting_data.json');
@@ -24,6 +26,11 @@ var series = null;
 const graphSize = 600;
 
 /* ////////////////// README ///////////////////////////
+Notice this was built on a React-Redux framework however it does not use most of
+Redux you should be able to pull the every file in containers folder to and put them
+anywhere.
+
+
 this uses a modifed YAxis and ScatterChart source check out lquinn on github for the updated file
 
 basic setup you must provide Scatter Chart a "width"(y width of a block) and a "endTime" column for it to work
@@ -37,6 +44,11 @@ Yaxis fails to display names if they are not exactly spaced by tens this can be 
 CSS files for the dropdown lists are still bugged ???
 
 //////////////////////////////////////////////////////// */
+/*
+Creator- Luke Quinn
+github-lquinn2015
+06/30/2017 
+*/
 
 
 /**
@@ -268,12 +280,31 @@ class ScatterLocation extends Component {
 			hover: null,
 			highlight: null,
 			selection: null,
-			timerange: series.range()
+			timerange: series.range(),
+			startDate: new Moment(series.range().begin()),
+			endDate: new Moment(series.range().end()),
+
 		};
 
 		this.handleSelectionChanged = this.handleSelectionChanged.bind(this);
 		this.handleMouseNear = this.handleMouseNear.bind(this);
 
+	}
+
+	/*
+		simply hands zoombox changes call this when you have editted times
+		If you want to change this you may but make sure you always check
+		 that the end date > start date otherwise errors could occur
+
+
+	*/
+	renderNewTimeSeries()
+	{
+		if(Moment(this.state.endDate).isAfter(this.state.startDate))
+		{
+			var t = new TimeRange(Moment(this.state.startDate), Moment(this.state.endDate))
+			this.setState({timerange:t})
+		}
 	}
 
 	handleSelectionChanged(point) {
@@ -302,6 +333,16 @@ class ScatterLocation extends Component {
 		}
 	}
 
+	newStartDate (date)
+	{	
+		this.setState({startDate:date})
+		this.renderNewTimeSeries();
+	}	
+	newEndDate (date)
+	{	
+		this.setState({endDate:date})
+		this.renderNewTimeSeries();		
+	}
 	render() {
 		const highlight = this.state.highlight;
 		const formatter = format(".2f");
@@ -400,7 +441,7 @@ class ScatterLocation extends Component {
                                         format=".1f"
                                         customLabels={clabels}
                                     />
-                                    <Charts>
+                                   <Charts>
                                         <ScatterChart
                                             axis="spot-lock"
                                             series={series}
@@ -427,8 +468,9 @@ class ScatterLocation extends Component {
                         </Resizable>
                     </div>
                 </div>
-                <div>
-		            <div id = "column-one" >
+
+                <div id= "User-Input-Section">
+                     <div id = "column-one" >
 		                <button onClick = {() => {rebuild();  this.setState({selection: null}); }}>Update</button>
 						<br />Click below for dropdown level select: <DropdownList 
 							data = {LevelArray}
@@ -443,6 +485,21 @@ class ScatterLocation extends Component {
 		          	<div id = "column-three">
 		                <ScatterKey />
 		          	</div>
+		          	<div id = "column-four">
+		          		Date:
+		          		<Datetime
+		          			value={this.startDate}
+							defaultValue = {this.state.startDate}
+							closeOnSelect='true'          			
+		          			onChange={(value) => {this.newStartDate(value.format())}}
+						/>
+		          		<Datetime
+		          			value={this.endDate}
+		          			defaultValue = {this.state.endDate}
+		          			closeOnSelect='true'
+		          			onChange={(value) => {this.newEndDate(value.format())}}
+						/>
+		      		</div>
             	</div>
             </div>
 		);
@@ -451,6 +508,17 @@ class ScatterLocation extends Component {
 
 export default ScatterLocation;
 
+/*//////////////////////////////////////////////////////
+This is the user input section change this freely to render new things
+change celloc arrray what ever location in there will be render 
+on the condition that it exists in that level
+
+change species by add and removing them from the displaySpecies array
+
+note if celloc is empty it will try to render alllocations at once
+but the render won't display names pass 10~ locations at the stock height
+
+//////////////////////////////////////////////////////*/
 
 
 //Arrays I need 
@@ -473,7 +541,7 @@ const Place = ({
 	handleFavourite 
 }) => (
 	<li
-		onClick={() => {handleFavourite(id); console.log(id)}}>
+		onClick={() => {handleFavourite(id)}}>
 		{info[1]}
 	</li>
 )
@@ -824,4 +892,5 @@ class ScatterKey extends Component
 		);
 	}
 }
+
 
